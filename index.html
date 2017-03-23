@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>入口文件</title>
+</head>
+<body>
+    <div id="app">
+        <span>姓名:{{user.name}}</span>
+        <span>年龄:{{user.age}}</span>
+        <span>父亲:{{user.parent.father}}</span>
+    </div>
+</body>
+<script src="compile.js"></script>
+<script src="Dep.js"></script>
+<script src="watcher.js"></script>
+<script src="observer.js"></script>
+<script>
+    function MVVM(options){
+        this.$options = options ;
+        var data = this._data = this.$options.data,me=this;
+          new Observer(data);
+        Object.keys(data).forEach(function(key) {
+            me._proxy(key);
+        });
+        this.$compile = new Compile(options.el , this );
+    }
+    MVVM.prototype ={
+        _proxy:function(key){
+            var me = this;
+            Object.defineProperty(me,key,{
+                configurable:false,
+                enumerable:true,
+                get:function proxyGetter(){
+                    return me._data[key];
+                },
+                set:function proxySetter(newVal){
+                    me._data[key] = newVal
+                }
+            })
+        },
+        $watch:function(key,cb,options){
+               new Watcher(this,key,cb);
+        }
+    }
+    window.onload = function(){
+        var app = new MVVM({
+            el:'#app',
+            data:{
+                user:{
+                    name:'kime',
+                     age:'23',
+                    parent:{
+                        father:'B',
+                        mother:'C'
+                    }
+                }
+            }
+        });
+        app.$watch('age',function(){
+            console.log(arguments);
+        })
+      app.user.parent.father = 4
+    }
+</script>
+</html>
